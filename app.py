@@ -1,6 +1,6 @@
 #我的程式庫
 import re, sqlite3, time
-from flask import Flask, render_template, url_for, request,redirect,abort
+from flask import Flask, render_template, url_for, request,redirect
 app = Flask(__name__)
 from flask import make_response
 
@@ -9,12 +9,32 @@ from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
 from msrest.authentication import CognitiveServicesCredentials
-from urllib.parse import parse_qsl
+
 from array import array
 import os
 from PIL import Image
 import sys
 import time
+
+'''
+Authenticate
+Authenticates your credentials and creates a client.
+'''
+# subscription_key = "PASTE_YOUR_COMPUTER_VISION_SUBSCRIPTION_KEY_HERE"
+# endpoint = "PASTE_YOUR_COMPUTER_VISION_ENDPOINT_HERE"
+subscription_key = "5282a9e4d28e4bc9be4c815e1e4c0875"
+endpoint = "https://minnie.cognitiveservices.azure.com/"
+
+computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+#匯入資料庫結束
+
+
+
+#先放所有應放函式
+# import flask related
+from flask import Flask, request, abort
+from urllib.parse import parse_qsl
+# import linebot related
 from linebot import (
     LineBotApi, WebhookHandler
 )
@@ -35,21 +55,6 @@ from keras.models import load_model
 from PIL import Image, ImageOps
 import numpy as np
 import os 
-'''
-Authenticate
-Authenticates your credentials and creates a client.
-'''
-# subscription_key = "PASTE_YOUR_COMPUTER_VISION_SUBSCRIPTION_KEY_HERE"
-# endpoint = "PASTE_YOUR_COMPUTER_VISION_ENDPOINT_HERE"
-subscription_key = "5282a9e4d28e4bc9be4c815e1e4c0875"
-endpoint = "https://minnie.cognitiveservices.azure.com/"
-
-computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
-#匯入資料庫結束
-
-
-
-#先放所有應放函式
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 # Load the model
 model = load_model('keras_model.h5')
@@ -124,7 +129,7 @@ def handle_message(event):
     
     elif event.message.type=='image':
         message_content = line_bot_api.get_message_content(event.message.id)
-        with open('static\photo.png', 'wb' ) as fd:
+        with open('D:\大一上\AI\\ai導論專題檔案\--2\\ncuguider-main\static\photo.png', 'wb' ) as fd:
             for chunk in message_content.iter_content():
                  fd.write(chunk)
     #開始跑是不是花了
@@ -136,7 +141,7 @@ def handle_message(event):
         print("===== Tag an image - remote =====")
         # Call API with remote image
         #tags_result_remote = computervision_client.tag_image(remote_image_url )
-        local_image = open('static\photo.png', "rb")
+        local_image = open('D:\大一上\AI\\ai導論專題檔案\--2\\ncuguider-main\static\photo.png', "rb")
         # Select visual feature type(s)
         local_image_features = ["categories"]
         # Call API
@@ -163,7 +168,7 @@ def handle_message(event):
     
                 #開始跑是不是花結束
                 #該開始run ai模型了
-                image = Image.open('static\photo.png')
+                image = Image.open('ncuguider-main\static\photo.png')
                 size = (224, 224)
                 image = ImageOps.fit(image, size, Image.ANTIALIAS)
 
@@ -192,7 +197,7 @@ def handle_message(event):
                     number=prediction.argmax()
 
                 #進入資料庫的環節
-                    con = sqlite3.connect('homework.db')
+                    con = sqlite3.connect('D:\大一上\AI\\ai導論專題檔案\\--4\\ncuguider-main\homework.db')
                     cursorObj = con.cursor()
                     cursorObj.execute(f'SELECT name FROM test1 WHERE `編號`={number}')
                     name=cursorObj.fetchone()
